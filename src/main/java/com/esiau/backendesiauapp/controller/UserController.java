@@ -18,7 +18,7 @@ import com.esiau.backendesiauapp.services.UserService;
 
 @RestController
 
-@CrossOrigin(origins={"http://localhost:8100", "http://localhost:58227"})
+@CrossOrigin(origins={"http://localhost:4200", "http://localhost:58227"})
 @RequestMapping("/backendesiauapp/v1/")
 public class UserController {
     
