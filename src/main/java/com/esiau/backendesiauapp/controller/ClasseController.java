@@ -21,7 +21,7 @@ import com.esiau.backendesiauapp.services.ClasseService;
 
 @RestController
 
-@CrossOrigin(origins="http://localhost:58227")
+@CrossOrigin(origins={"http://localhost:4200", "https://esiauwebapp.vercel.app"})
 @RequestMapping("/backendesiauapp/v1/")
 public class ClasseController {
 	
