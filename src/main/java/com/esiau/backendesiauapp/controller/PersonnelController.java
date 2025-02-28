@@ -25,7 +25,7 @@ import com.esiau.backendesiauapp.services.PretService;
 
 @RestController
 
-@CrossOrigin(origins="http://localhost:4200")
+@CrossOrigin(origins={"http://localhost:4200", "https://esiauwebapp.vercel.app"})
 @RequestMapping("/backendesiauapp/v1/")
 public class PersonnelController {
 	@Autowired
