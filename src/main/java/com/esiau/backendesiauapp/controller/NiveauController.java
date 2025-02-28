@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.esiau.backendesiauapp.models.Niveau;
 import com.esiau.backendesiauapp.services.NiveauService;
-@CrossOrigin(origins = "http://localhost:58227")
+@CrossOrigin(origins={"http://localhost:4200", "https://esiauwebapp.vercel.app"})
 
 @RestController
 @RequestMapping("/backendesiauapp/v1")
