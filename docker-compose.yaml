@@ -1,62 +1,62 @@
-version: "3.8"
+  version: "3.8"
 
 networks:
-  spring-boot-mysql-network:
-    name: spring-boot-mysql-network
+  spring-boot-postgresql-network:
+    name: spring-boot-postgresql-network
 
 services:
-  mysql-db:
-    image: mysql:8.0.32
-    container_name: mysql_db
+  postgres-db:
+    image: postgres:13
+    container_name: postgres_db
     restart: always
-    command: --default-authentication-plugin=mysql_native_password
     environment:
-      MYSQL_DATABASE: db_testesiauapp2  # ✅ Correspond à application.properties
-      MYSQL_ROOT_PASSWORD: "mypassword"  # ✅ Correspond à Spring Boot
+      POSTGRES_DB: db_testesiauapp2  # ✅ Correspond à application.properties
+      POSTGRES_USER: root            # ✅ Correspond à Spring Boot
+      POSTGRES_PASSWORD: "mypassword"  # ✅ Correspond à Spring Boot
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - postgres_data:/var/lib/postgresql/data
     networks:
-      - spring-boot-mysql-network
+      - spring-boot-postgresql-network
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pmypassword"]
+      test: ["CMD", "pg_isready", "-U", "root"]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 20s
 
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: phpmyadmin_container
+  pgadmin4:
+    image: dpage/pgadmin4
+    container_name: pgadmin4_container
     restart: always
     depends_on:
-      - mysql-db
+      - postgres-db
     environment:
-      PMA_HOST: mysql-db  # ✅ Correction du nom de service
-      MYSQL_ROOT_PASSWORD: "mypassword"
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com  # ✅ Email par défaut pour pgAdmin
+      PGADMIN_DEFAULT_PASSWORD: "mypassword"  # ✅ Mot de passe pour pgAdmin
     ports:
-      - "8081:80"  # ✅ Changé de 8080 à 8081 pour éviter conflit avec Spring Boot
+      - "8081:80"  # ✅ Port pour accéder à pgAdmin4
     networks:
-      - spring-boot-mysql-network
+      - spring-boot-postgresql-network
 
   spring-app:
     build: .
     container_name: spring_boot_app
     depends_on:
-      mysql-db:
-        condition: service_healthy  # ✅ Attendre que MySQL soit prêt
+      postgres-db:
+        condition: service_healthy  # ✅ Attendre que PostgreSQL soit prêt
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/db_testesiauapp2?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/db_testesiauapp2
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: "mypassword"
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQL8Dialect
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
     ports:
       - "8080:8080"
     restart: always
     networks:
-      - spring-boot-mysql-network
+      - spring-boot-postgresql-network
 
 volumes:
-  mysql_data:
+  postgres_data:
