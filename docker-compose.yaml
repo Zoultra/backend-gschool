@@ -1,0 +1,62 @@
+version: "3.8"
+
+networks:
+  spring-boot-mysql-network:
+    name: spring-boot-mysql-network
+
+services:
+  mysql-db:
+    image: mysql:8.0.32
+    container_name: mysql_db
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_DATABASE: db_testesiauapp2  # ✅ Correspond à application.properties
+      MYSQL_ROOT_PASSWORD: "mypassword"  # ✅ Correspond à Spring Boot
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - spring-boot-mysql-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-pmypassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin_container
+    restart: always
+    depends_on:
+      - mysql-db
+    environment:
+      PMA_HOST: mysql-db  # ✅ Correction du nom de service
+      MYSQL_ROOT_PASSWORD: "mypassword"
+    ports:
+      - "8081:80"  # ✅ Changé de 8080 à 8081 pour éviter conflit avec Spring Boot
+    networks:
+      - spring-boot-mysql-network
+
+  spring-app:
+    build: .
+    container_name: spring_boot_app
+    depends_on:
+      mysql-db:
+        condition: service_healthy  # ✅ Attendre que MySQL soit prêt
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/db_testesiauapp2?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: "mypassword"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.MySQL8Dialect
+    ports:
+      - "8080:8080"
+    restart: always
+    networks:
+      - spring-boot-mysql-network
+
+volumes:
+  mysql_data:
